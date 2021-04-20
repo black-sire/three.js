@@ -279,7 +279,8 @@ function WebGLRenderer( parameters ) {
 		properties = new WebGLProperties();
 		textures = new WebGLTextures( _gl, extensions, state, properties, capabilities, utils, info );
 		cubemaps = new WebGLCubeMaps( _this );
-		attributes = new WebGLAttributes( _gl, capabilities );
+//		attributes = new WebGLAttributes( _gl, capabilities );
+        attributes = (window && window.WebGLAttributesExt) ? new window.WebGLAttributesExt (_gl, capabilities ) : new WebGLAttributes( _gl, capabilities );
 		bindingStates = new WebGLBindingStates( _gl, extensions, attributes, capabilities );
 		geometries = new WebGLGeometries( _gl, attributes, info, bindingStates );
 		objects = new WebGLObjects( _gl, geometries, attributes, info );
@@ -304,6 +305,7 @@ function WebGLRenderer( parameters ) {
 		_this.shadowMap = shadowMap;
 		_this.state = state;
 		_this.info = info;
+        _this.attributes = attributes;
 
 	}
 
@@ -595,6 +597,8 @@ function WebGLRenderer( parameters ) {
 		animation.stop();
 
 	};
+
+    this.forceUpdateGeometry = function(geometry) { geometries.get( null, geometry ); geometries.update( geometry ); }
 
 	// Events
 

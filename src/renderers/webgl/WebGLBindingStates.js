@@ -338,14 +338,17 @@
 					if ( attribute === undefined ) continue;
 
 					const buffer = attribute.buffer;
-					const type = attribute.type;
-					const bytesPerElement = attribute.bytesPerElement;
+					let type = attribute.type;
+					let bytesPerElement = attribute.bytesPerElement;
 
 					if ( geometryAttribute.isInterleavedBufferAttribute ) {
 
 						const data = geometryAttribute.data;
 						const stride = data.stride;
 						const offset = geometryAttribute.offset;
+
+                        if (geometryAttribute.type !== undefined) type = geometryAttribute.type;
+						if (geometryAttribute.bytesPerElement !== undefined) bytesPerElement = geometryAttribute.bytesPerElement;
 
 						if ( data && data.isInstancedInterleavedBuffer ) {
 
