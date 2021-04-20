@@ -501,6 +501,7 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 			'uniform mat3 normalMatrix;',
 			'uniform vec3 cameraPosition;',
 			'uniform bool isOrthographic;',
+            'uniform uint mesh_id;',
 
 			'#ifdef USE_INSTANCING',
 
