@@ -97,6 +97,7 @@ function WebGLRenderer( parameters ) {
 	// scene graph
 
 	this.sortObjects = true;
+    this.renderStage = 0;
 
 	// user-defined clipping
 
@@ -1766,6 +1767,7 @@ function WebGLRenderer( parameters ) {
 		p_uniforms.setValue( _gl, 'normalMatrix', object.normalMatrix );
 		p_uniforms.setValue( _gl, 'modelMatrix', object.matrixWorld );
         p_uniforms.setValue( _gl, 'mesh_id', object.id & 0xFFFF);
+        p_uniforms.setValue( _gl, 'renderStage', _this.renderStage);
 
 		return program;
 
