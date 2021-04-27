@@ -97,6 +97,7 @@ function WebGLRenderer( parameters ) {
 	// scene graph
 
 	this.sortObjects = true;
+    this.renderStage = 0;
 
 	// user-defined clipping
 
@@ -148,6 +149,10 @@ function WebGLRenderer( parameters ) {
 	const _viewport = new Vector4( 0, 0, _width, _height );
 	const _scissor = new Vector4( 0, 0, _width, _height );
 	let _scissorTest = false;
+
+	//
+
+	const _currentDrawBuffers = [];
 
 	// frustum
 
@@ -274,6 +279,8 @@ function WebGLRenderer( parameters ) {
 		utils = new WebGLUtils( _gl, extensions, capabilities );
 
 		state = new WebGLState( _gl, extensions, capabilities );
+
+		_currentDrawBuffers[ 0 ] = _gl.BACK;
 
 		info = new WebGLInfo( _gl );
 		properties = new WebGLProperties();
@@ -1470,7 +1477,7 @@ function WebGLRenderer( parameters ) {
 
 		const fog = scene.fog;
 		const environment = material.isMeshStandardMaterial ? scene.environment : null;
-		const encoding = ( _currentRenderTarget === null ) ? _this.outputEncoding : _currentRenderTarget.texture.encoding;
+		const encoding = ( _currentRenderTarget === null ) ? _this.outputEncoding : (Array.isArray(_currentRenderTarget.texture) ? _currentRenderTarget.texture[0].encoding : _currentRenderTarget.texture.encoding);
 		const envMap = cubemaps.get( material.envMap || environment );
 		const vertexAlphas = material.vertexColors === true && object.geometry && object.geometry.attributes.color && object.geometry.attributes.color.itemSize === 4;
 
@@ -1760,6 +1767,7 @@ function WebGLRenderer( parameters ) {
 		p_uniforms.setValue( _gl, 'normalMatrix', object.normalMatrix );
 		p_uniforms.setValue( _gl, 'modelMatrix', object.matrixWorld );
         p_uniforms.setValue( _gl, 'mesh_id', object.id & 0xFFFF);
+        p_uniforms.setValue( _gl, 'renderStage', _this.renderStage);
 
 		return program;
 
@@ -1864,7 +1872,62 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		state.bindFramebuffer( _gl.FRAMEBUFFER, framebuffer );
+		if ( state.bindFramebuffer( _gl.FRAMEBUFFER, framebuffer ) && capabilities.multiRenderTarget ) {
+
+			let needsUpdate = false;
+
+			if ( renderTarget && renderTarget.isWebGLMultiRenderTarget ) {
+
+				if ( _currentDrawBuffers.length !== renderTarget.texture.length || _currentDrawBuffers[ 0 ] !== _gl.COLOR_ATTACHMENT0 ) {
+
+					for ( let i = 0, il = renderTarget.texture.length; i < il; i ++ ) {
+
+						_currentDrawBuffers[ i ] = _gl.COLOR_ATTACHMENT0 + i;
+
+					}
+
+					_currentDrawBuffers.length = renderTarget.texture.length;
+					needsUpdate = true;
+
+				}
+
+			} else if ( renderTarget ) {
+
+				if ( _currentDrawBuffers.length !== 1 || _currentDrawBuffers[ 0 ] !== _gl.COLOR_ATTACHMENT0 ) {
+
+					_currentDrawBuffers[ 0 ] = _gl.COLOR_ATTACHMENT0;
+					_currentDrawBuffers.length = 1;
+					needsUpdate = true;
+
+				}
+
+			} else {
+
+				if ( _currentDrawBuffers.length !== 1 || _currentDrawBuffers[ 0 ] !== _gl.BACK ) {
+
+					_currentDrawBuffers[ 0 ] = _gl.BACK;
+					_currentDrawBuffers.length = 1;
+					needsUpdate = true;
+
+				}
+
+			}
+
+			if ( needsUpdate ) {
+
+				if ( capabilities.isWebGL2 ) {
+
+					_gl.drawBuffers( _currentDrawBuffers );
+
+				} else {
+
+					extensions.get( 'WEBGL_draw_buffers' ).drawBuffersWEBGL( _currentDrawBuffers );
+
+				}
+
+			}
+
+		}
 
 		state.viewport( _currentViewport );
 		state.scissor( _currentScissor );
