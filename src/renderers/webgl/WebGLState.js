@@ -661,7 +661,7 @@ function WebGLState( gl, extensions, capabilities ) {
 
 	}
 
-	function setMaterial( material, frontFaceCW ) {
+	function setMaterial( material, frontFaceCW, disableBlending ) {
 
 		material.side === DoubleSide
 			? disable( gl.CULL_FACE )
@@ -672,7 +672,7 @@ function WebGLState( gl, extensions, capabilities ) {
 
 		setFlipSided( flipSided );
 
-		( material.blending === NormalBlending && material.transparent === false )
+		( (material.blending === NormalBlending && material.transparent === false) || disableBlending)
 			? setBlending( NoBlending )
 			: setBlending( material.blending, material.blendEquation, material.blendSrc, material.blendDst, material.blendEquationAlpha, material.blendSrcAlpha, material.blendDstAlpha, material.premultipliedAlpha );
 

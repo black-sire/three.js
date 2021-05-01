@@ -759,7 +759,7 @@ function WebGLRenderer( parameters ) {
 
 		const program = setProgram( camera, scene, material, object );
 
-		state.setMaterial( material, frontFaceCW );
+		state.setMaterial( material, frontFaceCW, _this.disableBlending );
 
 		//
 
@@ -1327,7 +1327,7 @@ function WebGLRenderer( parameters ) {
 
 			const program = setProgram( camera, scene, material, object );
 
-			state.setMaterial( material );
+			state.setMaterial( material, undefined, _this.disableBlending );
 
 			bindingStates.reset();
 

@@ -865,9 +865,10 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 		const glFormat = utils.convert( texture.format );
 		const glType = utils.convert( texture.type );
-		const glInternalFormat = getInternalFormat( texture.internalFormat, glFormat, glType );
 
 		if (!texture.isRenderbuffer){
+
+			const glInternalFormat = getInternalFormat( texture.internalFormat, glFormat, glType );
 
 			if ( textureTarget === _gl.TEXTURE_3D || textureTarget === _gl.TEXTURE_2D_ARRAY ) {
 
@@ -883,7 +884,7 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 			_gl.framebufferTexture2D( _gl.FRAMEBUFFER, attachment, textureTarget, properties.get( texture ).__webglTexture, 0 );
 			state.bindFramebuffer( _gl.FRAMEBUFFER, null );
 		}else{
-			_gl.renderbufferStorage( _gl.RENDERBUFFER, glInternalFormat, renderTarget.width, renderTarget.height );
+			_gl.renderbufferStorage( _gl.RENDERBUFFER, texture.internalFormat, renderTarget.width, renderTarget.height );
 
 			state.bindFramebuffer( _gl.FRAMEBUFFER, framebuffer );
 			_gl.framebufferRenderbuffer( _gl.FRAMEBUFFER, attachment, _gl.RENDERBUFFER, properties.get( texture ).__webglRenderbuffer );
@@ -898,7 +899,7 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 		if ( renderTarget.depthBuffer && ! renderTarget.stencilBuffer ) {
 
-			let glInternalFormat = isWebGL2 ? _gl.DEPTH_COMPONENT32F : _gl.DEPTH_COMPONENT16;
+			let glInternalFormat = isWebGL2 ? _gl.DEPTH_COMPONENT24 : _gl.DEPTH_COMPONENT16;
 
 			if ( isMultisample ) {
 
@@ -940,7 +941,7 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 			} else {
 
-				_gl.renderbufferStorage( _gl.RENDERBUFFER, _gl.DEPTH_STENCIL, renderTarget.width, renderTarget.height );
+				_gl.renderbufferStorage( _gl.RENDERBUFFER, isWebGL2 ? _gl.DEPTH24_STENCIL8 : _gl.DEPTH_STENCIL, renderTarget.width, renderTarget.height );
 
 			}
 
@@ -1255,9 +1256,9 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 			} else {
 
-				state.bindRenderbuffer(_gl.RENDERBUFFER, textureProperties.__webglRenderbuffer );
+				_gl.bindRenderbuffer(_gl.RENDERBUFFER, textureProperties.__webglRenderbuffer );
 				setupFrameBufferTexture( renderTargetProperties.__webglFramebuffer, renderTarget, texture, _gl.COLOR_ATTACHMENT0 );
-				state.bindTexture( _gl.RENDERBUFFER, null );
+				_gl.bindRenderbuffer( _gl.RENDERBUFFER, null );
 
 			}
 
